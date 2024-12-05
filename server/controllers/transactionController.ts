@@ -1,11 +1,10 @@
 import { PrismaClient } from '@prisma/client';
-import { Request, Response } from 'express';
 import { z } from 'zod';
 import { transactionValidation, Transaction } from '../validations/transaction';
 const prisma = new PrismaClient();
 
 
-export const createTransaction = async (req: any, res: Response) => {
+export const createTransaction = async (req: any, res: any) => {
     try {
         const validatedData = transactionValidation.parse(req.body);
 
@@ -20,7 +19,7 @@ export const createTransaction = async (req: any, res: Response) => {
             });
         }
 
-        const transaction : Transaction = await prisma.transaction.create({
+        const transaction: Transaction = await prisma.transaction.create({
             data: {
                 walletId: wallet.id,
                 type: validatedData.type,
@@ -70,7 +69,7 @@ export const createTransaction = async (req: any, res: Response) => {
 };
 
 
-export const getAllTransactions = async (req: any, res: Response) => {
+export const getAllTransactions = async (req: any, res: any) => {
     try {
         const wallet = await prisma.wallet.findUnique({
             where: { userId: req.user.userId }
@@ -111,7 +110,7 @@ export const getAllTransactions = async (req: any, res: Response) => {
 };
 
 
-export const filterByCategory = async (req: any, res: Response) => {
+export const filterByCategory = async (req: any, res: any) => {
     try {
         const wallet = await prisma.wallet.findUnique({
             where: { userId: req.user.userId },
@@ -162,7 +161,7 @@ export const filterByCategory = async (req: any, res: Response) => {
 };
 
 
-export const getTransactionById = async (req: any, res: Response) => {
+export const getTransactionById = async (req: any, res: any) => {
     const transactionId = Number(req.params.id);
 
     if (isNaN(transactionId)) {
@@ -213,7 +212,7 @@ export const getTransactionById = async (req: any, res: Response) => {
 };
 
 
-export const updateTransaction = async (req: any, res: Response) => {
+export const updateTransaction = async (req: any, res: any) => {
     const transactionId = Number(req.params.id);
 
     if (isNaN(transactionId)) {
@@ -285,7 +284,7 @@ export const updateTransaction = async (req: any, res: Response) => {
 };
 
 
-export const deleteTransaction = async (req: any, res: Response) => {
+export const deleteTransaction = async (req: any, res: any) => {
     const transactionId = Number(req.params.id);
 
     if (isNaN(transactionId)) {

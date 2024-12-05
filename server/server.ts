@@ -3,6 +3,7 @@ import db from "./config/db_connection";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import adminRoutes from './routes/adminRoute'
+import userRoutes from './routes/userRoute'
 
 export default function initializeServer(app: Application) {
 
@@ -21,6 +22,8 @@ export default function initializeServer(app: Application) {
     app.use(cookieParser());
     app.use(express.json());
     app.use('/api/admin', adminRoutes);
+    app.use('/api/user', userRoutes);
+
     app.get("/", (req, res) => {
         res.send("Hello there!");
     });

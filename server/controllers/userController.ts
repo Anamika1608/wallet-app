@@ -1,11 +1,11 @@
 import { PrismaClient } from '@prisma/client';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { registerUser } from '../validations/user';
 
 const prisma = new PrismaClient();
 
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (req: Request, res: any) => {
     try {
         const data: registerUser = req.body;
 
@@ -46,7 +46,7 @@ export const createUser = async (req: Request, res: Response) => {
 };
 
 
-export const getAllUsers = async (req: Request, res: Response) => {
+export const getAllUsers = async (req: Request, res: any) => {
     try {
         const users = await prisma.user.findMany();
         return res.status(200).json({
@@ -63,7 +63,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 };
 
 
-export const getUserById = async (req: Request, res: Response) => {
+export const getUserById = async (req: Request, res: any) => {
     const userId = Number(req.params.id);
 
     if (isNaN(userId)) {
@@ -99,7 +99,7 @@ export const getUserById = async (req: Request, res: Response) => {
 };
 
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (req: Request, res: any) => {
     const userId = Number(req.params.id);
 
     if (isNaN(userId)) {
@@ -141,7 +141,7 @@ export const updateUser = async (req: Request, res: Response) => {
 };
 
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (req: Request, res: any) => {
     const userId = Number(req.params.id);
 
     if (isNaN(userId)) {
@@ -177,7 +177,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 };
 
 
-export const deactivateUser = async (req: Request, res: Response) => {
+export const deactivateUser = async (req: Request, res: any) => {
     const userId = Number(req.params.id);
 
     if (isNaN(userId)) {
@@ -233,7 +233,7 @@ export const deactivateUser = async (req: Request, res: Response) => {
 };
 
 
-export const activateUser = async (req: Request, res: Response) => {
+export const activateUser = async (req: Request, res: any) => {
     const userId = Number(req.params.id);
 
     if (isNaN(userId)) {

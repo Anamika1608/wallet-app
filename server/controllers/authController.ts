@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -12,7 +12,7 @@ const JWT_SECRET: any = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN: any = process.env.JWT_EXPIRES_IN || '7d';
 
 
-export const registerUser = async (req: Request, res: Response) => {
+export const registerUser = async (req: Request, res: any) => {
     try {
         const validatedData = userValidation.parse(req.body);
 
@@ -91,7 +91,7 @@ export const registerUser = async (req: Request, res: Response) => {
 };
 
 
-export const loginUser = async (req: Request, res: Response) => {
+export const loginUser = async (req: Request, res: any) => {
     try {
         const validatedData = loginValidation.parse(req.body);
 
@@ -175,7 +175,7 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 
 
-export const logout = (req: Request, res: Response) => {
+export const logout = (req: Request, res: any) => {
     res.clearCookie('auth_token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',

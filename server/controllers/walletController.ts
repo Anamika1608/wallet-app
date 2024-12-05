@@ -1,11 +1,11 @@
 import { PrismaClient } from '@prisma/client';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { z } from 'zod';
 import { walletValidation, WalletStatusEnum } from '../validations/wallet'; 
 
 const prisma = new PrismaClient();
 
-export const createWallet = async (req: any, res: Response) => {
+export const createWallet = async (req: any, res: any) => {
     try {
         const validatedData = walletValidation.parse({
             userId: req.user.userId,
@@ -59,8 +59,7 @@ export const createWallet = async (req: any, res: Response) => {
     }
 };
 
-
-export const getUserWallet = async (req: any, res: Response) => {
+export const getUserWallet = async (req: any, res: any) => {
     try {
         const wallet = await prisma.wallet.findUnique({
             where: { userId: req.user.userId },
@@ -88,64 +87,8 @@ export const getUserWallet = async (req: any, res: Response) => {
     }
 };
 
-export const updateWalletBalance = async (req: any, res: Response) => {
-    const { balance } = req.body;
-
-    try {
-        const validatedData = walletValidation.partial().parse({ balance });
-
-        const wallet = await prisma.wallet.findUnique({
-            where: { userId: req.user.userId }
-        });
-
-        if (!wallet) {
-            return res.status(404).json({
-                success: false,
-                message: "Wallet not found"
-            });
-        }
-
-        if (wallet.status === 'freeze') {
-            return res.status(403).json({
-                success: false,
-                message: "Wallet is currently frozen. Cannot update balance."
-            });
-        }
-
-        const updatedWallet = await prisma.wallet.update({
-            where: { userId: req.user.userId },
-            data: { balance: validatedData.balance }
-        });
-
-        return res.status(200).json({
-            success: true,
-            message: "Wallet balance updated successfully",
-            wallet: updatedWallet
-        });
-
-    } catch (error) {
-        console.error('Wallet balance update error:', error);
-
-        if (error instanceof z.ZodError) {
-            return res.status(400).json({
-                success: false,
-                message: "Validation failed",
-                errors: error.errors.map(err => ({
-                    field: err.path.join('.'),
-                    message: err.message
-                }))
-            });
-        }
-
-        return res.status(500).json({
-            success: false,
-            message: "An error occurred while updating wallet balance"
-        });
-    }
-};
-
 // Admin: Get All Wallets
-export const getAllWallets = async (req: Request, res: Response) => {
+export const getAllWallets = async (req: Request, res: any) => {
     try {
         const [wallets, total] = await Promise.all([
             prisma.wallet.findMany({
@@ -170,7 +113,7 @@ export const getAllWallets = async (req: Request, res: Response) => {
 };
 
 // Admin: Get Wallet by ID
-export const getWalletById = async (req: Request, res: Response) => {
+export const getWalletById = async (req: Request, res: any) => {
     const walletId = Number(req.params.id);
 
     if (isNaN(walletId)) {
@@ -208,7 +151,7 @@ export const getWalletById = async (req: Request, res: Response) => {
 };
 
 // Admin: Freeze/Unfreeze Wallet
-export const toggleWalletStatus = async (req: Request, res: Response) => {
+export const toggleWalletStatus = async (req: Request, res: any) => {
     const walletId = Number(req.params.id);
     const { status } = req.body;
 
@@ -266,7 +209,7 @@ export const toggleWalletStatus = async (req: Request, res: Response) => {
 };
 
 // Admin: Delete Wallet
-export const deleteWallet = async (req: Request, res: Response) => {
+export const deleteWallet = async (req: Request, res: any) => {
     const walletId = Number(req.params.id);
 
     if (isNaN(walletId)) {
