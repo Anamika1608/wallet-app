@@ -2,26 +2,26 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function createUser(username: string, email: string) {
+export const createUser = async function (username: string, email: string) {
     const user = await prisma.user.create({
         data: { username, email },
     });
     return user;
 }
 
-async function getAllUsers() {
+export const getAllUsers = async function () {
     const users = await prisma.user.findMany();
     return users;
 }
 
-async function getUserById(userId: number) {
+export const getUserById = async function (userId: number) {
     const user = await prisma.user.findUnique({
         where: { id: userId },
     });
     return user;
 }
 
-async function updateUser(userId: number, data: { username?: string; email?: string }) {
+export const updateUser = async function (userId: number, data: { username?: string; email?: string }) {
     const user = await prisma.user.update({
         where: { id: userId },
         data,
@@ -29,7 +29,7 @@ async function updateUser(userId: number, data: { username?: string; email?: str
     return user;
 }
 
-async function deleteUser(userId: number) {
+export const deleteUser = async function (userId: number) {
     await prisma.user.delete({
         where: { id: userId },
     });
