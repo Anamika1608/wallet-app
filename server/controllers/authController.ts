@@ -9,10 +9,10 @@ import 'dotenv/config';
 const prisma = new PrismaClient();
 
 const JWT_SECRET: any = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN:any = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_EXPIRES_IN: any = process.env.JWT_EXPIRES_IN || '7d';
 
 
-export const register = async (req: Request, res: Response) => {
+export const registerUser = async (req: Request, res: Response) => {
     try {
         const validatedData = userValidation.parse(req.body);
 
@@ -91,7 +91,7 @@ export const register = async (req: Request, res: Response) => {
 };
 
 
-export const login = async (req: Request, res: Response) => {
+export const loginUser = async (req: Request, res: Response) => {
     try {
         const validatedData = loginValidation.parse(req.body);
 
@@ -185,6 +185,29 @@ export const logout = (req: Request, res: Response) => {
     return res.status(200).json({
         success: true,
         message: "Logged out successfully"
+    });
+};
+
+
+export const adminLogin = async (req: Request, res: any) => {
+    const { email, password } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.isAdmin) {
+        return res.status(401).json({ message: 'Unauthorized access' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, JWT_SECRET, { expiresIn: '1h' });
+
+    return res.status(200).json({
+        success: true,
+        token,
+        message: "Logged in successfully"
     });
 };
 
