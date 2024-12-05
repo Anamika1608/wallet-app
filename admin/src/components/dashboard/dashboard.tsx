@@ -1,5 +1,6 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { 
   Table, 
   TableBody, 
@@ -14,6 +15,15 @@ import {
   CardHeader, 
   CardTitle 
 } from '@/components/ui/card';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
 import { 
   Tabs, 
   TabsContent, 
@@ -31,90 +41,172 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from '@/components/ui/dialog';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
-  UserCircle2, 
-  Wallet, 
-  MoreHorizontal, 
-  Pencil, 
-  Trash2, 
-  CheckCircle2, 
-  XCircle 
-} from 'lucide-react';
+    UserCircle2, 
+    Wallet, 
+    MoreHorizontal 
+  } from 'lucide-react';
+  import { toast } from 'sonner';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  status: 'active' | 'inactive';
+}
+
+interface Wallet {
+  id: string;
+  userId: string;
+  balance: number;
+  status: 'active' | 'inactive';
+}
 
 const AdminDashboard: React.FC = () => {
-  const [users, setUsers] = useState([
-    { 
-      id: '1', 
-      name: 'John Doe', 
-      email: 'john@example.com', 
-      status: 'active' 
-    },
-    { 
-      id: '2', 
-      name: 'Jane Smith', 
-      email: 'jane@example.com', 
-      status: 'inactive' 
-    }
-  ]);
+    const [users, setUsers] = useState<User[]>([
+      { 
+        id: '1', 
+        name: 'John Doe', 
+        email: 'john@example.com', 
+        status: 'active' 
+      },
+      { 
+        id: '2', 
+        name: 'Jane Smith', 
+        email: 'jane@example.com', 
+        status: 'inactive' 
+      }
+    ]);
+  
+    const [wallets, setWallets] = useState<Wallet[]>([
+      { 
+        id: '1', 
+        userId: '1', 
+        balance: 5000, 
+        status: 'active' 
+      },
+      { 
+        id: '2', 
+        userId: '2', 
+        balance: 3000, 
+        status: 'inactive' 
+      }
+    ]);
+  
+    const [loading, setLoading] = useState(false);
+    const [newUser, setNewUser] = useState({
+      name: '',
+      email: '',
+      password: ''
+    });
 
-  const [wallets, setWallets] = useState([
-    { 
-      id: '1', 
-      userId: '1', 
-      balance: 5000, 
-      status: 'active' 
-    },
-    { 
-      id: '2', 
-      userId: '2', 
-      balance: 3000, 
-      status: 'inactive' 
-    }
-  ]);
+    const handleCreateUser = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.post('/api/users', newUser, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
 
-  const handleUserAction = (userId: string, action: 'activate' | 'deactivate' | 'delete') => {
-    switch(action) {
-      case 'activate':
-        setUsers(users.map(user => 
-          user.id === userId 
-            ? { ...user, status: 'active' } 
-            : user
-        ));
-        break;
-      case 'deactivate':
-        setUsers(users.map(user => 
-          user.id === userId 
-            ? { ...user, status: 'inactive' } 
-            : user
-        ));
-        break;
-      case 'delete':
-        setUsers(users.filter(user => user.id !== userId));
-        break;
+            setUsers([...users, response.data]);
+
+            setNewUser({ name: '', email: '', password: '' });
+
+            toast.success('User created successfully');
+        } catch (error) {
+            toast.error('Failed to create user');
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+
+  useEffect(() => {
+    fetchUsers();
+    fetchWallets();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/users', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setUsers(response.data);
+    } catch (error) {
+      toast.error('Failed to fetch users');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleWalletAction = (walletId: string, action: 'toggle' | 'delete') => {
-    switch(action) {
-      case 'toggle':
-        setWallets(wallets.map(wallet => 
-          wallet.id === walletId 
-            ? { ...wallet, status: wallet.status === 'active' ? 'inactive' : 'active' } 
-            : wallet
-        ));
-        break;
-      case 'delete':
-        setWallets(wallets.filter(wallet => wallet.id !== walletId));
-        break;
+  const fetchWallets = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/wallets', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setWallets(response.data);
+    } catch (error) {
+      toast.error('Failed to fetch wallets');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUserAction = async (userId: string, action: 'activate' | 'deactivate' | 'delete') => {
+    try {
+      setLoading(true);
+      switch(action) {
+        case 'activate':
+          await axios.patch(`/api/users/${userId}/activate`, {}, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          });
+          break;
+        case 'deactivate':
+          await axios.patch(`/api/users/${userId}/deactivate`, {}, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          });
+          break;
+        case 'delete':
+          await axios.delete(`/api/users/${userId}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          });
+          break;
+      }
+      fetchUsers(); // Refresh users after action
+      toast.success(`User ${action}d successfully`);
+    } catch (error) {
+      toast.error(`Failed to ${action} user`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleWalletAction = async (walletId: string, action: 'toggle' | 'delete') => {
+    try {
+      setLoading(true);
+      switch(action) {
+        case 'toggle':
+          await axios.patch(`/api/wallets/${walletId}/toggle-status`, {}, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          });
+          break;
+        case 'delete':
+          await axios.delete(`/api/wallets/${walletId}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          });
+          break;
+      }
+      fetchWallets();
+      toast.success(`Wallet ${action}d successfully`);
+    } catch (error) {
+      toast.error(`Failed to ${action} wallet`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -136,12 +228,66 @@ const AdminDashboard: React.FC = () => {
         
         <TabsContent value="users">
           <Card>
-            <CardHeader>
+          <CardHeader>
               <CardTitle className="flex justify-between items-center">
                 User Management
-                <Button>
-                  Add New User
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button disabled={loading}>
+                      Add New User
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New User</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">
+                          Username
+                        </Label>
+                        <Input 
+                          id="name" 
+                          value={newUser.name}
+                          onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                          className="col-span-3" 
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="email" className="text-right">
+                          Email
+                        </Label>
+                        <Input 
+                          id="email" 
+                          value={newUser.email}
+                          onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                          className="col-span-3" 
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="password" className="text-right">
+                          Password
+                        </Label>
+                        <Input 
+                          id="password" 
+                          type="password"
+                          value={newUser.password}
+                          onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                          className="col-span-3" 
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button 
+                        type="submit" 
+                        onClick={handleCreateUser}
+                        disabled={loading || !newUser.name || !newUser.email || !newUser.password}
+                      >
+                        Create User
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -173,7 +319,7 @@ const AdminDashboard: React.FC = () => {
                       <TableCell>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" disabled={loading}>
                               <MoreHorizontal />
                             </Button>
                           </AlertDialogTrigger>
@@ -188,14 +334,16 @@ const AdminDashboard: React.FC = () => {
                               <div className="flex space-x-2">
                                 <Button 
                                   onClick={() => handleUserAction(user.id, user.status === 'active' ? 'deactivate' : 'activate')}
+                                  disabled={loading}
                                   variant={user.status === 'active' ? 'destructive' : 'default'}
                                 >
                                   {user.status === 'active' ? 'Deactivate' : 'Activate'}
                                 </Button>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
                                 <AlertDialogAction 
                                   className="bg-red-500 hover:bg-red-600"
                                   onClick={() => handleUserAction(user.id, 'delete')}
+                                  disabled={loading}
                                 >
                                   Delete User
                                 </AlertDialogAction>
@@ -250,7 +398,7 @@ const AdminDashboard: React.FC = () => {
                       <TableCell>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" disabled={loading}>
                               <MoreHorizontal />
                             </Button>
                           </AlertDialogTrigger>
@@ -265,14 +413,16 @@ const AdminDashboard: React.FC = () => {
                               <div className="flex space-x-2">
                                 <Button 
                                   onClick={() => handleWalletAction(wallet.id, 'toggle')}
+                                  disabled={loading}
                                   variant={wallet.status === 'active' ? 'destructive' : 'default'}
                                 >
                                   {wallet.status === 'active' ? 'Deactivate' : 'Activate'}
                                 </Button>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
                                 <AlertDialogAction 
                                   className="bg-red-500 hover:bg-red-600"
                                   onClick={() => handleWalletAction(wallet.id, 'delete')}
+                                  disabled={loading}
                                 >
                                   Delete Wallet
                                 </AlertDialogAction>
