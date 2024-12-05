@@ -1,32 +1,20 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-import AuthScreen from '@/Views/Auth/Auth';
-// import Login from '@/Views/Login/Login';
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import AuthScreen from '../../Views/Auth/Auth';
+import Dashboard from '../../Views/Dashboard/Dashboard';
 
-export default function HomeScreen() {
+const Stack = createStackNavigator();
+
+const App = () => {
   return (
-   <AuthScreen/>
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Auth" component={AuthScreen} />
+        <Stack.Screen name="Dashboard" component={Dashboard} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+export default App;
