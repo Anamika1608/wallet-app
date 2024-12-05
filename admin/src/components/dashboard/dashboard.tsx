@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import dynamic from "next/dynamic";
 import { 
   Table, 
   TableBody, 
@@ -443,4 +444,4 @@ const AdminDashboard: React.FC = () => {
   );
 };
 
-export default AdminDashboard;
+export default dynamic(() => Promise.resolve(AdminDashboard), { ssr: false });
