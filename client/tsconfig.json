@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "Views/Auth/Auth.tsx"  ]
+, "Views/Auth/Auth.tsx", "app/(tabs)/index.tsx"  ]
 }
