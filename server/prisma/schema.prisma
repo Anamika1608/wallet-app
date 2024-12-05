@@ -13,11 +13,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TransactionType {
+  Income
+  Expense
+}
+
+enum TransactionCategory {
+  Salary
+  Food
+  Savings
+  Transportation
+}
+
 model User {
-  id       Int      @id @default(autoincrement())
-  username String   @unique
-  email    String   @unique
-  wallet   Wallet?  @relation("UserWallet")
+  id       Int     @id @default(autoincrement())
+  username String  @unique
+  email    String  @unique
+  password String
+  status   String  @default("active")
+  wallet   Wallet? @relation("UserWallet")
 }
 
 model Wallet {
@@ -25,16 +39,22 @@ model Wallet {
   balance      String
   userId       Int           @unique
   user         User          @relation("UserWallet", fields: [userId], references: [id])
+  status       String        @default("unfreeze")
   transactions Transaction[]
 }
 
 model Transaction {
-  id        Int      @id @default(autoincrement())
+  id        Int                 @id @default(autoincrement())
   walletId  Int
-  wallet    Wallet   @relation(fields: [walletId], references: [id])
-  createdAt DateTime @default(now())
-  type      String
+  wallet    Wallet              @relation(fields: [walletId], references: [id])
+  createdAt DateTime            @default(now())
+  type      TransactionType
   amount    String
-  category  String
+  category  TransactionCategory
 }
 
+model Admin {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+}
